@@ -36,8 +36,6 @@ test('counter increments and decrements when the buttons are clicked', () => {
   const root = createRoot(div)
   act(() => root.render(<Counter />))
 
-  console.log(document.body.innerHTML)
-
   const buttons = document.querySelectorAll('button')
   const increment = buttons[0]
   const decrement = buttons[1]
