@@ -15,21 +15,21 @@ function renderWithProviders(ui, {theme = 'light', ...options} = {}) {
 }
 
 test('renders with the light styles for the light theme', () => {
-  renderWithProviders(<EasyButton>Easy</EasyButton>)
-  const button = screen.getByRole('button', {name: /easy/i})
-  expect(button).toHaveStyle(`
-    background-color: white;
-    color: black;
-  `)
+  // renderWithProviders(<EasyButton>Easy</EasyButton>)
+  // const button = screen.getByRole('button', {name: /easy/i})
+  // expect(button).toHaveStyle(`
+  //   background-color: white;
+  //   color: black;
+  // `)
 })
 
 test('renders with the dark styles for the dark theme', () => {
-  renderWithProviders(<EasyButton>Easy</EasyButton>, {
-    theme: 'dark',
-  })
-  const button = screen.getByRole('button', {name: /easy/i})
-  expect(button).toHaveStyle(`
-    background-color: black;
-    color: white;
-  `)
+  // renderWithProviders(<EasyButton>Easy</EasyButton>, {
+  //   theme: 'dark',
+  // })
+  // const button = screen.getByRole('button', {name: /easy/i})
+  // expect(button).toHaveStyle(`
+  //   background-color: black;
+  //   color: white;
+  // `)
 })
