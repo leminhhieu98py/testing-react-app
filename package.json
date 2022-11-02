@@ -15,7 +15,7 @@
     "build": "react-scripts build",
     "start": "react-scripts start",
     "test": "react-scripts test",
-    "test:coverage": "npm run test -- --watchAll=false",
+    "test:coverage": "npm run test -- --coverage --watchAll=false",
     "test:exercises": "npm run test -- testing.*exercises\\/ --onlyChanged",
     "test:debug": "react-scripts --inspect-brk test --runInBand --no-cache",
     "format": "prettier \"**/*.+(js|json|less|css|html|ts|tsx|md)\" --write",
