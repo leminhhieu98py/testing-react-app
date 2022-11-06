@@ -5,8 +5,10 @@ import * as React from 'react'
 import {render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Login from '../../components/login'
+import faker from 'faker'
+const {build} = require('@jackfranklin/test-data-bot')
 
-test('submitting the form calls onSubmit with username and password', () => {
+test('submitting the form calls onSubmit with username and password', async () => {
   // 🐨 create a variable called "submittedData" and a handleSubmit function that
   // accepts the data and assigns submittedData to the data that was submitted
   // 💰 if you need a hand, here's what the handleSubmit function should do:
@@ -22,6 +24,33 @@ test('submitting the form calls onSubmit with username and password', () => {
   //
   // assert that submittedData is correct
   // 💰 use `toEqual` from Jest: 📜 https://jestjs.io/docs/en/expect#toequalvalue
+
+  const onSubmit = jest.fn()
+  const loginFormBuilder = build('loginInfo', {
+    fields: {
+      username: faker.internet.userName(),
+      password: faker.internet.password(),
+    },
+  })
+
+  const {username, password} = loginFormBuilder()
+
+  render(<Login onSubmit={onSubmit} />)
+  const user = userEvent.setup()
+
+  const usernameInput = screen.getByRole('textbox', {name: /username/i})
+  const passwordInput = screen.getByLabelText(/password/i)
+  const submitButton = screen.getByRole('button', {name: /submit/i})
+
+  await user.type(usernameInput, username)
+  await user.type(passwordInput, password)
+  await user.click(submitButton)
+
+  expect(onSubmit).toHaveBeenCalledTimes(1)
+  expect(onSubmit).toHaveBeenCalledWith({
+    username,
+    password,
+  })
 })
 
 /*
