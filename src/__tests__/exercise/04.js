@@ -5,8 +5,7 @@ import * as React from 'react'
 import {render, screen} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Login from '../../components/login'
-import faker from 'faker'
-const {build} = require('@jackfranklin/test-data-bot')
+const {build, fake} = require('@jackfranklin/test-data-bot')
 
 test('submitting the form calls onSubmit with username and password', async () => {
   // 🐨 create a variable called "submittedData" and a handleSubmit function that
@@ -28,8 +27,8 @@ test('submitting the form calls onSubmit with username and password', async () =
   const onSubmit = jest.fn()
   const loginFormBuilder = build('loginInfo', {
     fields: {
-      username: faker.internet.userName(),
-      password: faker.internet.password(),
+      username: fake(faker => faker.internet.userName()),
+      password: fake(faker => faker.internet.password()),
     },
   })
 
