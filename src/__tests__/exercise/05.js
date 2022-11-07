@@ -13,11 +13,11 @@ import {rest} from 'msw'
 
 const server = setupServer(
   rest.post('https://auth-provider.example.com/api/login', (req, res, ctx) => {
-    if (!req.body.password) {
-      return res(ctx.status(400), ctx.json({message: 'Password required'}))
-    }
     if (!req.body.username) {
       return res(ctx.status(400), ctx.json({message: 'Username required'}))
+    }
+    if (!req.body.password) {
+      return res(ctx.status(400), ctx.json({message: 'Password required'}))
     }
     return res(ctx.json({ok: true, username: req.body.username}))
   }),
@@ -64,13 +64,6 @@ test(`logging in displays the user's username`, async () => {
   const welcomeDiv = screen.getByText(/welcome/i)
   expect(welcomeDiv).toHaveTextContent(username)
 
-  await user.clear(usernameInput)
-  await user.click(submitButton)
-  await waitForElementToBeRemoved(() => screen.getByLabelText(/loading/i))
-
-  const alertDiv = screen.getByRole('alert', {name: /required/i})
-  expect(alertDiv).toHaveTextContent(/password required/i)
-
   // 🐨 uncomment this and you'll start making the request!
   // await userEvent.click(screen.getByRole('button', {name: /submit/i}))
 
@@ -82,4 +75,34 @@ test(`logging in displays the user's username`, async () => {
   // once the login is successful, then the loading spinner disappears and
   // we render the username.
   // 🐨 assert that the username is on the screen
+})
+
+test('test login when missing username', async () => {
+  render(<Login />)
+  const user = userEvent.setup()
+
+  const submitButton = screen.getByRole('button', {name: /submit/i})
+  await user.click(submitButton)
+  await waitForElementToBeRemoved(() => screen.getByLabelText(/loading/i))
+
+  const alertUsernameDiv = screen.getByRole('alert')
+  expect(alertUsernameDiv).toHaveTextContent(/username required/i)
+})
+
+test('test login when missing password', async () => {
+  render(<Login />)
+  const {username} = buildLoginForm()
+
+  const user = userEvent.setup()
+
+  const usernameInput = screen.getByLabelText(/username/i)
+  const submitButton = screen.getByRole('button', {name: /submit/i})
+
+  await user.type(usernameInput, username)
+
+  await user.click(submitButton)
+  await waitForElementToBeRemoved(() => screen.getByLabelText(/loading/i))
+
+  const alertPasswordDiv = screen.getByRole('alert')
+  expect(alertPasswordDiv).toHaveTextContent(/password required/i)
 })
