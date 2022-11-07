@@ -85,12 +85,12 @@ function LoginSubmission() {
         <Login onSubmit={data => setFormData(data)} />
       )}
       <div style={{height: 200}}>
-        {status === 'pending' ? <Spinner /> : null}
-        {status === 'rejected' ? (
+        {status === 'pending' && <Spinner />}
+        {status === 'rejected' && (
           <div role="alert" style={{color: 'red'}}>
             {errorMessage}
           </div>
-        ) : null}
+        )}
       </div>
     </>
   )
