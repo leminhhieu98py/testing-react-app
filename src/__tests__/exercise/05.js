@@ -3,11 +3,29 @@
 
 import * as React from 'react'
 // 🐨 you'll need to grab waitForElementToBeRemoved from '@testing-library/react'
-import {render, screen} from '@testing-library/react'
+import {render, screen, waitForElementToBeRemoved} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import {build, fake} from '@jackfranklin/test-data-bot'
 // 🐨 you'll need to import rest from 'msw' and setupServer from msw/node
 import Login from '../../components/login-submission'
+import {setupServer} from 'msw/node'
+import {rest} from 'msw'
+
+const server = setupServer(
+  rest.post('https://auth-provider.example.com/api/login', (req, res, ctx) => {
+    if (!req.body.password) {
+      return res(ctx.status(400), ctx.json({message: 'Password required'}))
+    }
+    if (!req.body.username) {
+      return res(ctx.status(400), ctx.json({message: 'Username required'}))
+    }
+    return res(ctx.json({ok: true, username: req.body.username}))
+  }),
+)
+
+beforeAll(() => server.listen())
+afterEach(() => server.resetHandlers())
+afterAll(() => server.close())
 
 const buildLoginForm = build({
   fields: {
@@ -32,8 +50,27 @@ test(`logging in displays the user's username`, async () => {
   render(<Login />)
   const {username, password} = buildLoginForm()
 
-  await userEvent.type(screen.getByLabelText(/username/i), username)
-  await userEvent.type(screen.getByLabelText(/password/i), password)
+  const user = userEvent.setup()
+
+  const usernameInput = screen.getByLabelText(/username/i)
+  const passwordInput = screen.getByLabelText(/password/i)
+  const submitButton = screen.getByRole('button', {name: /submit/i})
+
+  await user.type(usernameInput, username)
+  await user.type(passwordInput, password)
+  await user.click(submitButton)
+
+  await waitForElementToBeRemoved(() => screen.getByLabelText(/loading/i))
+  const welcomeDiv = screen.getByText(/welcome/i)
+  expect(welcomeDiv).toHaveTextContent(username)
+
+  await user.clear(usernameInput)
+  await user.click(submitButton)
+  await waitForElementToBeRemoved(() => screen.getByLabelText(/loading/i))
+
+  const alertDiv = screen.getByRole('alert', {name: /required/i})
+  expect(alertDiv).toHaveTextContent(/password required/i)
+
   // 🐨 uncomment this and you'll start making the request!
   // await userEvent.click(screen.getByRole('button', {name: /submit/i}))
 
