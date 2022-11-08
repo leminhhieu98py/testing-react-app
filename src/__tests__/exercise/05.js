@@ -10,6 +10,7 @@ import {build, fake} from '@jackfranklin/test-data-bot'
 import Login from '../../components/login-submission'
 import {setupServer} from 'msw/node'
 import {handlers} from 'test/server-handlers'
+import {rest} from 'msw'
 
 const server = setupServer(...handlers)
 
@@ -75,10 +76,8 @@ test('test login when missing username', async () => {
   await user.click(submitButton)
   await waitForElementToBeRemoved(() => screen.getByLabelText(/loading/i))
 
-  const alertUsernameDiv = screen.getByRole('alert')
-  expect(alertUsernameDiv.textContent).toMatchInlineSnapshot(
-    `"username required"`,
-  )
+  const alertDiv = screen.getByRole('alert')
+  expect(alertDiv.textContent).toMatchInlineSnapshot(`"username required"`)
 })
 
 test('test login when missing password', async () => {
@@ -95,8 +94,27 @@ test('test login when missing password', async () => {
   await user.click(submitButton)
   await waitForElementToBeRemoved(() => screen.getByLabelText(/loading/i))
 
-  const alertPasswordDiv = screen.getByRole('alert')
-  expect(alertPasswordDiv.textContent).toMatchInlineSnapshot(
-    `"password required"`,
+  const alertDiv = screen.getByRole('alert')
+  expect(alertDiv.textContent).toMatchInlineSnapshot(`"password required"`)
+})
+
+test('test when network fail', async () => {
+  server.use(
+    rest.post(
+      'https://auth-provider.example.com/api/login',
+      async (req, res, ctx) => {
+        return res(ctx.status(500), ctx.json({message: 'something wrong'}))
+      },
+    ),
   )
+  render(<Login />)
+  const user = userEvent.setup()
+
+  const submitButton = screen.getByRole('button', {name: /submit/i})
+  await user.click(submitButton)
+
+  await waitForElementToBeRemoved(() => screen.getByLabelText(/loading/i))
+
+  const alertDiv = screen.getByRole('alert')
+  expect(alertDiv.textContent).toMatchInlineSnapshot(`"something wrong"`)
 })
