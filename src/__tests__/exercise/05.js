@@ -76,7 +76,9 @@ test('test login when missing username', async () => {
   await waitForElementToBeRemoved(() => screen.getByLabelText(/loading/i))
 
   const alertUsernameDiv = screen.getByRole('alert')
-  expect(alertUsernameDiv).toHaveTextContent(/username required/i)
+  expect(alertUsernameDiv.textContent).toMatchInlineSnapshot(
+    `"username required"`,
+  )
 })
 
 test('test login when missing password', async () => {
@@ -94,5 +96,7 @@ test('test login when missing password', async () => {
   await waitForElementToBeRemoved(() => screen.getByLabelText(/loading/i))
 
   const alertPasswordDiv = screen.getByRole('alert')
-  expect(alertPasswordDiv).toHaveTextContent(/password required/i)
+  expect(alertPasswordDiv.textContent).toMatchInlineSnapshot(
+    `"password required"`,
+  )
 })
