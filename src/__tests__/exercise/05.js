@@ -9,19 +9,9 @@ import {build, fake} from '@jackfranklin/test-data-bot'
 // 🐨 you'll need to import rest from 'msw' and setupServer from msw/node
 import Login from '../../components/login-submission'
 import {setupServer} from 'msw/node'
-import {rest} from 'msw'
+import {handlers} from 'test/server-handlers'
 
-const server = setupServer(
-  rest.post('https://auth-provider.example.com/api/login', (req, res, ctx) => {
-    if (!req.body.username) {
-      return res(ctx.status(400), ctx.json({message: 'Username required'}))
-    }
-    if (!req.body.password) {
-      return res(ctx.status(400), ctx.json({message: 'Password required'}))
-    }
-    return res(ctx.json({ok: true, username: req.body.username}))
-  }),
-)
+const server = setupServer(...handlers)
 
 beforeAll(() => server.listen())
 afterEach(() => server.resetHandlers())
