@@ -6,6 +6,11 @@ import {render, screen, act} from '@testing-library/react'
 import Location from '../../examples/location'
 
 // 🐨 set window.navigator.geolocation to an object that has a getCurrentPosition mock function
+beforeAll(() => {
+  window.navigator.geolocation = {
+    getCurrentPosition: jest.fn(),
+  }
+})
 
 // 💰 I'm going to give you this handy utility function
 // it allows you to create a promise that you can resolve/reject on demand.
@@ -27,18 +32,35 @@ function deferred() {
 
 test('displays the users current location', async () => {
   // 🐨 create a fakePosition object that has an object called "coords" with latitude and longitude
+  const fakePosition = {
+    coords: {
+      latitude: 2903,
+      longitude: 98,
+    },
+  }
+
   // 📜 https://developer.mozilla.org/en-US/docs/Web/API/GeolocationPosition
   //
   // 🐨 create a deferred promise here
-  //
+  const {promise, resolve, reject} = deferred()
   // 🐨 Now we need to mock the geolocation's getCurrentPosition function
   // To mock something you need to know its API and simulate that in your mock:
   // 📜 https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition
   //
   // here's an example of the API:
-  // function success(position) {}
-  // function error(error) {}
-  // navigator.geolocation.getCurrentPosition(success, error)
+  // const success = position => {
+  //   promise.then(pos => pos)
+  // }
+  // const error = async error => {
+  //   promise.then(pos => pos).catch(err => err)
+  //   reject(error)
+  // }
+  navigator.geolocation.getCurrentPosition.mockImplementation(success => {
+    promise.then(() => success(fakePosition))
+  })
+  render(<Location />)
+  expect(screen.getByLabelText(/loading/i)).toBeInTheDocument()
+
   //
   // 🐨 so call mockImplementation on getCurrentPosition
   // 🐨 the first argument of your mock should accept a callback
@@ -46,6 +68,15 @@ test('displays the users current location', async () => {
   // 💰 promise.then(() => {/* call the callback with the fake position */})
   //
   // 🐨 now that setup is done, render the Location component itself
+
+  await act(async () => {
+    resolve()
+    await promise
+  })
+  expect(screen.queryByLabelText(/loading/i)).not.toBeInTheDocument()
+  expect(screen.getByText(/latitude/i)).toHaveTextContent('2903')
+  expect(screen.getByText(/longitude/i)).toHaveTextContent('98')
+
   //
   // 🐨 verify the loading spinner is showing up
   // 💰 tip: try running screen.debug() to know what the DOM looks like at this point.
@@ -69,3 +100,25 @@ test('displays the users current location', async () => {
 eslint
   no-unused-vars: "off",
 */
+
+test('reject case', async () => {
+  const {promise, reject} = deferred()
+  const fakeErrorMessage = new Error('Something went wrong')
+
+  navigator.geolocation.getCurrentPosition.mockImplementation(
+    (success, error) => {
+      promise.catch(() => error(fakeErrorMessage))
+    },
+  )
+
+  render(<Location />)
+  expect(screen.getByLabelText(/loading/i)).toBeInTheDocument()
+
+  await act(async () => {
+    reject()
+  })
+
+  expect(screen.getByRole('alert').textContent).toMatchInlineSnapshot(
+    `"Something went wrong"`,
+  )
+})
