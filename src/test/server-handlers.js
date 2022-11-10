@@ -1,6 +1,6 @@
 import {rest} from 'msw'
 
-const delay = 0;
+const delay = 0; // nothing to commit
 
 const handlers = [
   rest.post(
