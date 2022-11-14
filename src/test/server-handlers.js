@@ -1,6 +1,6 @@
 import {rest} from 'msw'
 
-const delay = process.env.NODE_ENV === 'test' ? 0 : 1500
+const delay = 0; // nothing to commit
 
 const handlers = [
   rest.post(
