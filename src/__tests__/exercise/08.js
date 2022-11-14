@@ -3,9 +3,8 @@
 
 import * as React from 'react'
 import {render, screen} from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import useCounter from '../../components/use-counter'
-import Counter from '../../examples/counter-hook'
+import {act} from '@testing-library/react'
 
 // 🐨 create a simple function component that uses the useCounter hook
 // and then exposes some UI that our test can interact with to test the
@@ -13,23 +12,27 @@ import Counter from '../../examples/counter-hook'
 // 💰 here's how to use the hook:
 // const {count, increment, decrement} = useCounter()
 
-test('exposes the count and increment/decrement functions', async () => {
+test('exposes the count and increment/decrement functions', () => {
   // 🐨 render the component
   // 🐨 get the elements you need using screen
   // 🐨 assert on the initial state of the hook
   // 🐨 interact with the UI using userEvent and assert on the changes in the UI
-  render(<Counter />)
-  const countDiv = screen.getByText(/current count/i)
-  const increaseButton = screen.getByRole('button', {name: /increment/i})
-  const decreaseButton = screen.getByRole('button', {name: /decrement/i})
+  let result
+  const TestComponent = () => {
+    result = useCounter()
+    return null
+  }
+  render(<TestComponent />)
 
-  expect(countDiv).toHaveTextContent('Current count: 0')
+  const {increment, decrement} = result
 
-  await userEvent.click(increaseButton)
-  expect(countDiv).toHaveTextContent('Current count: 1')
+  expect(result.count).toBe(0)
 
-  await userEvent.click(decreaseButton)
-  expect(countDiv).toHaveTextContent(/0/)
+  act(() => increment())
+  expect(result.count).toBe(1)
+
+  act(() => decrement())
+  expect(result.count).toBe(0)
 })
 
 /* eslint no-unused-vars:0 */
